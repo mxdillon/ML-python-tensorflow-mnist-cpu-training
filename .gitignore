@@ -127,3 +127,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# mypy
+.mypy_cache/
+
+# Textmate
+.tm_properties
+
+log/s
+*.onnx
+
+.vscode/
