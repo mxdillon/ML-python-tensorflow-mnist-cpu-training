@@ -138,3 +138,5 @@ log/s
 *.onnx
 
 .vscode/
+.metrics/
+*.onnx
