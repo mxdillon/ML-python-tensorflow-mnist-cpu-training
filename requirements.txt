@@ -1,5 +1,5 @@
 #Fill in dependencies here
 onnx==1.6.0
 tensorflow==1.15.0
-tf2onnx==1.5.4
+tf2onnx==1.5.3
 keras2onnx==1.6.0

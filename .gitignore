@@ -140,3 +140,6 @@ log/s
 .vscode
 metrics/
 *.onnx
+scrap*.py
+tensorboard/
+saved_model*/

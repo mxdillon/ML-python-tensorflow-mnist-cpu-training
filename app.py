@@ -46,7 +46,7 @@ model.compile(optimizer='adam',
 # Step 2c: Train model
 history = model.fit(train_ds, epochs=1)
 
-# Step3: Evaluate model performance
+# Step 3: Evaluate model performance
 train_loss, train_accuracy = history.history['loss'][history.epoch[-1]], history.history['acc'][history.epoch[-1]]
 test_loss, test_accuracy = model.evaluate(test_ds, verbose=2)
 
@@ -57,8 +57,16 @@ if train_loss > target_loss or train_accuracy < target_accuracy or test_loss > t
 # Step 4: Persist the trained model in ONNX format in the local file system along with any significant metrics
 
 # Save to ONNX format
+
+# If the model is a simple tf.keras model:
 onnx_model = keras2onnx.convert_keras(model)
 onnx.save_model(onnx_model, 'model.onnx')  # jenkins x requires model to be named this
+
+# If the model is a more complex tf model in a SavedModel format:
+# Export the model to a SavedModel
+tf.keras.experimental.export_saved_model(model, 'saved_model')
+command = f'python -m tf2onnx.convert --opset 11 --fold_const --verbose --saved-model ./saved_model --output model.onnx'
+os.system(command)
 
 # Write metrics
 if not os.path.exists("metrics"):
