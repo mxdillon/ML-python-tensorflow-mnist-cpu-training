@@ -71,7 +71,8 @@ tf.keras.experimental.export_saved_model(model, "saved_model")
 # Convert SavedModel to ONNX format
 command = f"python -m tf2onnx.convert --opset 10 --fold_const --verbose --saved-model ./saved_model --output model.onnx"
 os.system(command)
-#  ^This currently has to be run using the command line tool when using rnn layers as noted https://github.com/onnx/tensorflow-onnx/issues/693
+# ^This currently has to be run using the command line tool as some arguments are not supported in the
+# python API. See https://github.com/onnx/tensorflow-onnx#using-the-python-api for details.
 
 # Write metrics
 if not os.path.exists("metrics"):
