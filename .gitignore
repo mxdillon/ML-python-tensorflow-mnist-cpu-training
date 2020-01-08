@@ -138,8 +138,8 @@ log/s
 *.onnx
 
 .vscode
+
+logs/
 metrics/
-*.onnx
-scrap*.py
 tensorboard/
 saved_model*/

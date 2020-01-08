@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import tf2onnx
+from datetime import datetime
 import tensorflow as tf
 
 # Step 1: Set up target metrics for evaluating training
@@ -28,7 +29,6 @@ x_test = x_test[..., tf.newaxis]
 train_ds = (
     tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(32)
 )
-
 test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
 # Step 2b: Define model architecture and compiles
@@ -45,8 +45,13 @@ model.compile(
     optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
 )
 
-# Step 2c: Train model
-history = model.fit(train_ds, epochs=1)
+# Step 2c: Setup Tensorboard logging
+logdir = "./logs/scalars/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+
+
+# Step 2d: Train model
+history = model.fit(train_ds, epochs=5, callbacks=[tensorboard_callback])
 
 # Step 3: Evaluate model performance
 train_loss, train_accuracy = (
@@ -67,7 +72,7 @@ if (
 # Step 4: Persist the trained model in ONNX format in the local file system along with any significant metrics
 
 # Export the model to a SavedModel
-tf.keras.experimental.export_saved_model(model, "saved_model")
+tf.keras.experimental.export_saved_model(model, "./saved_model")
 # Convert SavedModel to ONNX format
 command = f"python -m tf2onnx.convert --opset 10 --fold_const --verbose --saved-model ./saved_model --output model.onnx"
 os.system(command)
