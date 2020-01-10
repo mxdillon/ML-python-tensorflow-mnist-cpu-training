@@ -134,7 +134,7 @@ dmypy.json
 # Textmate
 .tm_properties
 
-log/s
+log/
 *.onnx
 
 .vscode
