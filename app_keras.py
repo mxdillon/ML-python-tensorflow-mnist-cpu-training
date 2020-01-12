@@ -1,13 +1,14 @@
 # coding=utf-8
 
-import onnxruntime as rt
-import keras2onnx
-import onnx
+
 import os
 import sys
 import json
-from datetime import datetime
+import onnx
+import keras2onnx
 import tensorflow as tf
+import onnxruntime as rt
+from datetime import datetime
 
 # Step 1: Set up target metrics for evaluating training
 
@@ -49,7 +50,7 @@ logdir = "./logs/scalars/" + datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
 # Step 2d: Train model
-history = model.fit(train_ds, epochs=10, callbacks=[tensorboard_callback])
+history = model.fit(train_ds, epochs=1, callbacks=[tensorboard_callback])
 
 # Step 3: Evaluate model performance
 train_loss, train_accuracy = (
