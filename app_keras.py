@@ -6,7 +6,6 @@ import onnx
 import os
 import sys
 import json
-import tf2onnx
 from datetime import datetime
 import tensorflow as tf
 
@@ -34,9 +33,8 @@ train_ds = (tf.data.Dataset.from_tensor_slices(
 test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
 # Step 2b: Define model architecture and compiles
-tf.keras.backend.set_floatx('float32')
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Flatten(),  #   input_shape=(28, 28, 1)
+    tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
     tf.keras.layers.Dense(128, activation="relu"),
     tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Dense(10, activation="softmax"),
@@ -51,7 +49,7 @@ logdir = "./logs/scalars/" + datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
 # Step 2d: Train model
-history = model.fit(train_ds, epochs=1, callbacks=[tensorboard_callback])
+history = model.fit(train_ds, epochs=10, callbacks=[tensorboard_callback])
 
 # Step 3: Evaluate model performance
 train_loss, train_accuracy = (
@@ -66,32 +64,16 @@ if (train_loss > target_loss or train_accuracy < target_accuracy
     sys.exit("Training failed to meet threshold")
 
 # Step 4: Persist the trained model in ONNX format in the local file system along with any significant metrics
-
-# Export the model to a SavedModel
-tf.keras.experimental.export_saved_model(model, "./saved_model")
-
-
-# onnx_model = keras2onnx.convert_keras(model)
-# onnx.save_model(onnx_model, "model_keras.onnx")
-
-# os.environ['TF_KERAS']='1'
-# onnx_model = onnxmltools.convert_keras(model, target_opset)
-# onnx.save(onnx_model, "model_keras.onnx")
-
-# Convert SavedModel to ONNX format
-command = f"python -m tf2onnx.convert --opset 10 --fold_const --verbose --saved-model ./saved_model --output model.onnx"
-os.system(command)
-# ^This currently has to be run using the command line tool as some arguments are not supported in the
-# python API. See https://github.com/onnx/tensorflow-onnx#using-the-python-api for details.
+onnx_model = keras2onnx.convert_keras(model)
+onnx.save_model(onnx_model, "model.onnx")
 
 model = onnx.load("model.onnx")
 
 # Check that the IR is well formed
 onnx.checker.check_model(model)
 
-sess_options = rt.SessionOptions()
-sess_options.enable_profiling = True
-sess = rt.InferenceSession("model.onnx", sess_options)
+rt.set_default_logger_severity(0)
+sess = rt.InferenceSession("model.onnx")
 
 # Write metrics
 if not os.path.exists("metrics"):
