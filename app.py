@@ -1,14 +1,9 @@
-# coding=utf-8
+#!/usr/bin/python
+# # coding=utf-8
 
 
-import os
-import sys
-import json
-import onnx
-import keras2onnx
-import tensorflow as tf
-import onnxruntime as rt
-from datetime import datetime
+from src.train import TrainMNIST
+
 
 # Step 1: Set up target metrics for evaluating training
 
@@ -17,73 +12,18 @@ target_loss = 0.35
 target_accuracy = 0.90
 
 # Step 2: Perform training for the model
-
-# Step 2a: Download and format training data
-mnist = tf.keras.datasets.mnist
-
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
-x_train, x_test = x_train / 255.0, x_test / 255.0
-
-# Add a channels dimension to the data for batches
-x_train = x_train[..., tf.newaxis]
-x_test = x_test[..., tf.newaxis]
-
-# Batch and shuffle the dataset
-train_ds = (tf.data.Dataset.from_tensor_slices(
-    (x_train, y_train)).shuffle(10000).batch(32))
-test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
-
-# Step 2b: Define model architecture and compiles
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Flatten(input_shape=(28, 28, 1)),
-    tf.keras.layers.Dense(128, activation="relu"),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(10, activation="softmax"),
-])
-
-model.compile(optimizer="adam",
-              loss="sparse_categorical_crossentropy",
-              metrics=["accuracy"])
-
-# Step 2c: Setup Tensorboard logging
-logdir = "./metrics/tensorboard_logs/scalars/" + datetime.now().strftime("%Y%m%d-%H%M%S")
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
-
-# Step 2d: Train model
-history = model.fit(train_ds, epochs=1, callbacks=[tensorboard_callback])
+model_trainer = TrainMNIST(batch_sz=32, epochs=1, target_loss=target_loss, target_accuracy=target_accuracy)
+model_trainer.load_format_data()
+model_trainer.define_model()
+model_trainer.setup_tensorboard()
+model_trainer.train_model()
 
 # Step 3: Evaluate model performance
-train_loss, train_accuracy = (
-    history.history["loss"][history.epoch[-1]],
-    history.history["acc"][history.epoch[-1]],
-)
-test_loss, test_accuracy = model.evaluate(test_ds, verbose=2)
-
+model_trainer.evaluate_performance()
 # Only persist the model if we have passed our desired threshold
-if (train_loss > target_loss or train_accuracy < target_accuracy
-        or test_loss > target_loss or test_accuracy < target_accuracy):
-    sys.exit("Training failed to meet threshold")
+model_trainer.persistence_criteria()
 
 # Step 4: Persist the trained model in ONNX format in the local file system along with any significant metrics
-onnx_model = keras2onnx.convert_keras(model)
-onnx.save_model(onnx_model, "model.onnx")
-
-model = onnx.load("model.onnx")
-
-# Check that the IR is well formed
-onnx.checker.check_model(model)
-
-rt.set_default_logger_severity(0)
-sess = rt.InferenceSession("model.onnx")
-
+model_trainer.convert_save_onnx()
 # Write metrics
-if not os.path.exists("metrics"):
-    os.mkdir("metrics")
-with open("metrics/trainingloss.metric", "w+") as f:
-    json.dump(str(train_loss), f)
-with open("metrics/testloss.metric", "w+") as f:
-    json.dump(str(test_loss), f)
-with open("metrics/trainingaccuracy.metric", "w+") as f:
-    json.dump(str(train_accuracy), f)
-with open("metrics/testaccuracy.metric", "w+") as f:
-    json.dump(str(test_accuracy), f)
+model_trainer.save_metrics()
