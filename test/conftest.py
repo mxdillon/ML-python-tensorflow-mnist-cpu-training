@@ -38,9 +38,3 @@ def train(log_tb):
 def evaluate(train):
     train.evaluate_performance()
     return train
-
-
-@pytest.fixture(scope='session')
-def persist(evaluate):
-    train.evaluate_performance()
-    return train
