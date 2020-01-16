@@ -2,6 +2,7 @@
 # # coding=utf-8
 
 import os
+import shutil
 import pytest
 import tensorflow as tf
 
@@ -43,13 +44,15 @@ def test_persistence_criteria(evaluate):
 
 
 def test_convert_save_onnx(evaluate):
-    os.system('rm -R model.onnx')
+    if os.path.exists('model.onnx'):
+        os.remove('model.onnx')
     evaluate.convert_save_onnx()
     assert os.path.exists('model.onnx')
 
 
 def test_save_metrics(evaluate):
-    os.system('rm -R ./metrics/')
+    if os.path.exists('./metrics'):
+        shutil.rmtree('./metrics')
     evaluate.save_metrics()
     assert os.path.exists('./metrics/testloss.metric')
-    os.system('rm -R ./metrics/')
+    shutil.rmtree('./metrics')
