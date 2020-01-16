@@ -19,11 +19,11 @@ class TrainMNIST:
 
         :param batch_sz: size of batches to train the data in
         :type batch_sz: int
-        :param epochs: [description]
+        :param epochs: number of epochs to run training for
         :type epochs: int
-        :param target_loss: [description]
+        :param target_loss: maximum loss that will be accepted for either train or test loss
         :type target_loss: float
-        :param target_accuracy: [description]
+        :param target_accuracy: minimum accuracy that will be accepted for either train or test accuracy [0:1]
         :type target_accuracy: float
         """
         self.batch_sz = batch_sz
