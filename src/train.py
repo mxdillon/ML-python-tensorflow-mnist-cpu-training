@@ -10,7 +10,7 @@ import tensorflow as tf
 from datetime import datetime
 
 
-class TrainMNIST():
+class TrainMNIST:
     """Train a simple Multi-Layer Percpetron network to classify MNIST images. Convert save model to .onnx format if
     training thresholds are met."""
 
