@@ -127,3 +127,19 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# mypy
+.mypy_cache/
+
+# Textmate
+.tm_properties
+
+log/
+*.onnx
+
+.vscode
+
+logs/
+metrics/
+tensorboard/
+saved_model*/
