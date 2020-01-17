@@ -135,11 +135,6 @@ dmypy.json
 .tm_properties
 
 log/
-*.onnx
 
+# vscode settings
 .vscode
-
-logs/
-metrics/
-tensorboard/
-saved_model*/
